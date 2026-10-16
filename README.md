@@ -1,4 +1,4 @@
-# Session 4 demos
+# ML Monitoring Workshop Demos
 
 Install the workshop environment once:
 
