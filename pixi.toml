@@ -1,0 +1,65 @@
+[workspace]
+name = "ml-monitoring-workshop"
+version = "0.1.0"
+description = "Session 4 workshop demos for ML monitoring with Panel and Metaflow"
+channels = ["conda-forge", "main"]
+platforms = ["osx-arm64", "linux-64"]
+
+[activation.env]
+METAFLOW_DEFAULT_DATASTORE = "local"
+METAFLOW_DEFAULT_METADATA = "local"
+CHURN_LOCAL = "1"
+PYTHONPATH = "src"
+
+[tasks]
+# The pinned Panel 1.9 lacks panel.ui, so the notebook and apps run in dev3.14.
+notebook = "conda run --no-capture-output -n dev3.14 jupyter lab churn_training.ipynb"
+notebook-validate = "conda run --no-capture-output -n dev3.14 jupyter nbconvert --to notebook --execute --inplace churn_training.ipynb --ExecutePreprocessor.timeout=240"
+flow = "python flows/main/flow.py run"
+seed-runs = "python flows/main/flow.py run --n-estimators 50 --seed 42 && python flows/main/flow.py run --n-estimators 100 --seed 42 && python flows/main/flow.py run --n-estimators 200 --seed 42 && python flows/main/flow.py run --n-estimators 400 --seed 42"
+serve-wrapped = "conda run --no-capture-output -n dev3.14 panel serve 01_wrapped.py --dev --show"
+serve-monitoring = "conda run --no-capture-output -n dev3.14 panel serve 02_interactive.py --dev --show"
+serve-compare = "conda run --no-capture-output -n dev3.14 panel serve 03_compare.py --dev --show"
+serve-metaflow = "conda run --no-capture-output -n dev3.14 panel serve 04_metaflow.py --dev --show"
+serve-card-app = "conda run --no-capture-output -n dev3.14 panel serve 05_card_app.py --dev --show"
+lint = "ruff check flows/main/flow.py src/_env.py 01_wrapped.py 02_interactive.py 03_compare.py 04_metaflow.py 05_card_app.py"
+validate = "python -c \"import hvplot, metaflow, panel; print(f'hvPlot {hvplot.__version__}; Metaflow {metaflow.__version__}; Panel {panel.__version__}')\""
+validate-card-app = "python -c \"import runpy; runpy.run_path('05_card_app.py'); print('Card app imports')\""
+
+[tasks.deploy]
+cmd = "ulimit -Sn 10240 && obproject-deploy"
+env = { CHURN_LOCAL = "0", METAFLOW_DEFAULT_DATASTORE = "s3", METAFLOW_DEFAULT_METADATA = "service" }
+
+[tasks.trigger-pipeline]
+cmd = "python flows/main/flow.py --production --environment=pypi argo-workflows trigger"
+env = { CHURN_LOCAL = "0", METAFLOW_DEFAULT_DATASTORE = "s3", METAFLOW_DEFAULT_METADATA = "service" }
+
+[tasks.notebook-remote]
+cmd = "conda run --no-capture-output -n dev3.14 jupyter lab churn_training.ipynb"
+env = { METAFLOW_DEFAULT_DATASTORE = "s3", METAFLOW_DEFAULT_METADATA = "service" }
+
+[tasks.serve-metaflow-remote]
+cmd = "conda run --no-capture-output -n dev3.14 panel serve 04_metaflow.py --dev --show"
+env = { METAFLOW_DEFAULT_DATASTORE = "s3", METAFLOW_DEFAULT_METADATA = "service" }
+
+[dependencies]
+python = "3.14.*"
+numpy = "2.4.*"
+pandas = "2.3.*"
+scikit-learn = "1.8.*"
+matplotlib = "3.10.*"
+joblib = "1.5.*"
+pyarrow = "*"
+jupyterlab = "*"
+nbformat = "*"
+nbconvert = "*"
+ruff = "*"
+outerbounds = "*"
+ob-project-utils = "*"
+
+[pypi-dependencies]
+panel = ">=1.9"
+hvplot = ">=0.12"
+metaflow = ">=2.19"
+metaflow-card-html = ">=1.0"
+shap = ">=0.52"

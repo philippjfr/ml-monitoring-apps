@@ -1,0 +1,9 @@
+# Runtime dependencies for the Panel app embedded by ChurnFlow's HTML Card.
+panel>=1.9
+panel-material-ui>=0.15
+hvplot>=0.12
+metaflow>=2.19
+outerbounds
+pandas>=2.3
+pyarrow
+scikit-learn>=1.8

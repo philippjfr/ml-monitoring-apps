@@ -1,0 +1,20 @@
+# The Card is rendered in the platform UI, so the embedded app must be reachable without
+# an interactive login flow and must accept websocket requests from the platform host.
+name: churn-monitoring-card-app
+port: 5006
+image: python:3.14
+dependencies:
+  from_requirements_file: requirements.txt
+  python: "3.12"
+cpu: 1
+memory: 2048
+min_replicas: 1
+max_replicas: 1
+public_access: true
+description: "Session 4 churn monitoring app embedded in a Metaflow HTML Card"
+env:
+  BOKEH_RESOURCES: cdn
+  METAFLOW_DEFAULT_DATASTORE: s3
+  METAFLOW_DEFAULT_METADATA: service
+commands:
+  - python -m panel serve 05_card_app.py --port 5006 --address 0.0.0.0 --allow-websocket-origin="*" --index=05_card_app

@@ -1,0 +1,9 @@
+project = "churn_workshop"
+title = "Session 4 Churn Monitoring"
+[dependencies]
+environment = "pypi"
+package_suffixes = ".py,.yaml,.txt,.html"
+
+[obproject_dirs]
+models = ".obproject_models"
+data = ".obproject_data"
